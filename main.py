@@ -70,20 +70,15 @@ def run_detection():
     print(f"Success! Output image saved to: {OUTPUT_IMAGE_PATH}")
 
 def run_camera():
-    from picamera import PiCamera
-    from picamera.array import PiRGBArray
-    import time
+    from picamera2 import Picamera2
     print("Loading YOLOv8 model...")
     model = YOLO('yolov8n.pt')
-    camera = PiCamera()
-    camera.resolution = (640, 480)
-    camera.framerate = 24
-    rawCapture = PiRGBArray(camera, size=(640, 480))
-    time.sleep(0.1)
-    print("Starting live CSI camera feed. Press 'q' to quit.")
-    for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
-        image = frame.array
-        results = model(image)
+    picam2 = Picamera2()
+    picam2.start()
+    print("Starting live Picamera2 feed. Press 'q' to quit.")
+    while True:
+        frame = picam2.capture_array()
+        results = model(frame)
         person_count = 0
         for result in results:
             boxes = result.boxes
@@ -93,18 +88,17 @@ def run_camera():
                 if cls == 0 and conf > CONFIDENCE_THRESHOLD:
                     person_count += 1
                     x1, y1, x2, y2 = map(int, box.xyxy[0])
-                    cv2.rectangle(image, (x1, y1), (x2, y2), (10, 255, 0), 2)
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (10, 255, 0), 2)
                     label = f'Person {person_count}: {int(conf * 100)}%'
-                    cv2.putText(image, label, (x1, y1 - 10),
+                    cv2.putText(frame, label, (x1, y1 - 10),
                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (10, 255, 0), 2)
-        cv2.putText(image, f'People Count: {person_count}', (30, 50),
+        cv2.putText(frame, f'People Count: {person_count}', (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
-        cv2.imshow('Live CSI Camera Feed', image)
-        key = cv2.waitKey(1) & 0xFF
-        rawCapture.truncate(0)
-        if key == ord('q'):
+        cv2.imshow('Live Picamera2 Feed', frame)
+        if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cv2.destroyAllWindows()
+    picam2.close()
 
 if __name__ == '__main__':
     if len(sys.argv) > 2 and sys.argv[1] == 'source' and sys.argv[2] == 'camera':
