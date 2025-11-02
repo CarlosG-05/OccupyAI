@@ -76,7 +76,7 @@ def run_camera():
     picam2 = Picamera2()
     picam2.preview_configuration.main.size = (1280, 720)
     picam2.preview_configuration.main.format = "RGB888"
-    picam2.preview_configuration.main.fps = 60
+    picam2.preview_configuration.controls = {"FrameDurationLimits": (16667, 16667)}  # 60fps
     picam2.configure("preview")
     picam2.start()
     print("Starting live Picamera2 feed at 1280x720 60fps. Press 'q' to quit.")
