@@ -39,5 +39,5 @@ Track, manage, and visualize university study room occupancy with computer visio
 
 - Carlos Guerrero — Electrial Engineering, UCSD
 - Elijah Inamarga — Computer Science, SDSU
-- Ruth Magay — Bio Engineering, UCSD
+- Ruth Maggay — Bio Engineering, UCSD
 - Gael Gallarzo
