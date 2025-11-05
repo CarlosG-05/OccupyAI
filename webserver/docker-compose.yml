@@ -5,7 +5,6 @@ services:
     container_name: fastapi-server
     ports:
       - "8000:8000"
-    environment:
-      - SUPABASE_URL=https://mpusidndnemhzskecnhb.supabase.co
-      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wdXNpZG5kbmVtaHpza2VjbmhiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjIyOTU4NTAsImV4cCI6MjA3Nzg3MTg1MH0.4HDvJS5KKABVaN65QTCTabO-2o2Y6_4f3htyiiN6TDA
+    env_file:
+      - .env
     restart: unless-stopped
