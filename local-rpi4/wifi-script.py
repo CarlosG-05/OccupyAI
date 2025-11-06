@@ -4,9 +4,28 @@ import subprocess
 ssid = "SETUP-E811"
 password = "block9357bucket"
 
-add_command = ["nmcli", "connection", "add", "type", "wifi", "con-name", ssid, "ifname", "wlan0","ssid", ssid, "wifi-sec.key-mgmt", "wpa-psk", "wifi-sec.psk", password]
+add_command = ["nmcli",
+               "connection",
+               "add",
+               "type",
+               "wifi",
+               "con-name",
+               ssid,
+               "ifname",
+               "wlan0",
+               "ssid",
+               ssid,
+               "wifi-sec.key-mgmt",
+               "wpa-psk",
+               "wifi-sec.psk",
+               password
+               ]
 
-activate_command = ["nmcli", "connection", "up", ssid]
+activate_command = ["nmcli",
+                    "connection",
+                    "up",
+                    ssid
+                    ]
 
 try:
     print(f"Attempting to connect to {ssid}...")
