@@ -1,8 +1,12 @@
 import subprocess
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 #TODO: Move to .env
-ssid = "SETUP-E811"
-password = "block9357bucket"
+ssid = os.getenv("SSID")
+password = os.getenv("PASSWORD")
 
 add_command = ["nmcli",
                "connection",
