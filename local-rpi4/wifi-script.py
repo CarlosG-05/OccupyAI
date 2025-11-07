@@ -32,13 +32,12 @@ activate_command = ["nmcli",
 
 try:
     print(f"Attempting to connect to {ssid}...")
-    subprocess.run(add_command, check=True)
-    print("Connection added")
 
-    print("Activating connection...")
+    subprocess.run(add_command, check=True)
     subprocess.run(activate_command, check=True)
-    print("Successfully connected")
+
+    print("Connection successful")
 except subprocess.CalledProcessError:
     print("Connection failed")
 except FileNotFoundError:
-    print("nmcli command not found")
+    print("Error: nmcli command not found")
