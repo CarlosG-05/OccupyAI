@@ -1,15 +1,16 @@
 import './Header.css'
+import logo from '../../assets/logo.png';
 
 export default function Header({ setCurrentLevel }) {
   return (
     <>
-      <div class="container">
-        <img class="title" src="/logo.png" alt="logo" width="200px" height="200px"/> 
+      <div className="container">
+      <img className="title" src={logo} alt="logo" width="200px" height="200px"/> 
         <h1>Love Library Study Rooms</h1>
 
-        <div class="dropdown">
-            <button class="dropbtn">Floor Level ᐯ</button>
-            <div class="dropdown-content">
+        <div className="dropdown">
+            <button className="dropbtn">Floor Level ᐯ</button>
+            <div className="dropdown-content">
                 <a href="#" onClick={() => setCurrentLevel(1)}>Floor 1</a>
                 <a href="#" onClick={() => setCurrentLevel(2)}>Floor 2</a>
                 <a href="#" onClick={() => setCurrentLevel(3)}>Floor 3</a>
