@@ -1,6 +1,6 @@
 import './Header.css'
 
-export default function Header() {
+export default function Header({ setCurrentLevel }) {
   return (
     <>
       <div class="container">
@@ -10,11 +10,11 @@ export default function Header() {
         <div class="dropdown">
             <button class="dropbtn">Floor Level ᐯ</button>
             <div class="dropdown-content">
-                <a href="#">Floor 1</a>
-                <a href="#">Floor 2</a>
-                <a href="#">Floor 3</a>
-                <a href="#">Floor 4</a>
-                <a href="#">Floor 5</a>
+                <a href="#" onClick={() => setCurrentLevel(1)}>Floor 1</a>
+                <a href="#" onClick={() => setCurrentLevel(2)}>Floor 2</a>
+                <a href="#" onClick={() => setCurrentLevel(3)}>Floor 3</a>
+                <a href="#" onClick={() => setCurrentLevel(4)}>Floor 4</a>
+                <a href="#" onClick={() => setCurrentLevel(5)}>Floor 5</a>
             </div>
         </div>
 
