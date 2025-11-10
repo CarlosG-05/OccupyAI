@@ -17,7 +17,7 @@ h1 {
 }
 
 .dropbtn {
-    background-color: #3e8e41;
+    background-color: #467D1C;
     color: white;
     padding: 16px;
     font-size: 16px;
@@ -53,7 +53,7 @@ h1 {
 }
 
 /* Button hover background color */
-.dropdown:hover .dropbtn {background-color: #4EB251;}
+.dropdown:hover .dropbtn {background-color: #5DA725;}
 #more:hover .dropbtn {background-color: #255DA7;}
 
 .dropdown-content a:hover {background-color: #ddd;}
