@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from supabase import create_client, Client
 import uvicorn
 import os
+import random
 from datetime import datetime
 from fastapi import BackgroundTasks
 
@@ -24,25 +25,75 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def _make_room_payload(room_number: int, floor: int=1, building: str = "Love Library", capacity: int = 20, occupancy: int = 0):
-    """Helper to create a study_rooms row payload."""
-    return {
-        "room_number": room_number,
-        "floor": floor,
-        "building": building,
-        "capacity": capacity,
-        "current_occupancy": occupancy
-    }
+def upload_dummy_data():
+    
+    room_data = [
+        # 3rd floor rooms
+        {"room_number": "LL-312", "floor": 3},
+        {"room_number": "314", "floor": 3},
+        {"room_number": "321", "floor": 3},
+        {"room_number": "323", "floor": 3},
+        {"room_number": "331", "floor": 3},
+        {"room_number": "333", "floor": 3},
+        {"room_number": "334", "floor": 3},
+        {"room_number": "336", "floor": 3},
+        {"room_number": "366", "floor": 3},
+        {"room_number": "369", "floor": 3},
+        {"room_number": "370", "floor": 3},
+        {"room_number": "372", "floor": 3},
+        {"room_number": "376", "floor": 3},
+        {"room_number": "378", "floor": 3},
+        {"room_number": "381", "floor": 3},
+        {"room_number": "383", "floor": 3},
+        {"room_number": "385", "floor": 3},
+        {"room_number": "387", "floor": 3},
+        # 4th floor rooms
+        {"room_number": "LL-418", "floor": 4},
+        {"room_number": "420", "floor": 4},
+        {"room_number": "422", "floor": 4},
+        {"room_number": "428B", "floor": 4},
+        {"room_number": "428C", "floor": 4},
+        {"room_number": "466", "floor": 4},
+        {"room_number": "467", "floor": 4},
+        {"room_number": "468", "floor": 4},
+        {"room_number": "469", "floor": 4},
+        {"room_number": "470", "floor": 4},
+        {"room_number": "471", "floor": 4},
+        # 5th floor rooms
+        {"room_number": "LL-517", "floor": 5},
+        {"room_number": "530", "floor": 5},
+        {"room_number": "530A", "floor": 5},
+        {"room_number": "532", "floor": 5},
+        {"room_number": "582", "floor": 5},
+        # 1st floor rooms
+        {"room_number": "LL-112", "floor": 1},
+        {"room_number": "114", "floor": 1},
+        {"room_number": "121", "floor": 1},
+        {"room_number": "123", "floor": 1},
+        {"room_number": "131", "floor": 1},
+        {"room_number": "133", "floor": 1},
+        {"room_number": "134", "floor": 1},
+        {"room_number": "136", "floor": 1},
+        # 2nd floor rooms
+        {"room_number": "LL-212", "floor": 2},
+        {"room_number": "214", "floor": 2},
+        {"room_number": "221", "floor": 2},
+        {"room_number": "223", "floor": 2},
+        {"room_number": "231", "floor": 2},
+        {"room_number": "233", "floor": 2},
+        {"room_number": "234", "floor": 2},
+        {"room_number": "236", "floor": 2},
+    ]
 
-def upload_dummy_data(count: int = 3):
-    """Insert `count` dummy study room rows into Supabase `study_rooms` table.
-
-    Returns the Supabase response object.
-    This function can be imported and called from tests or used by an endpoint.
-    """
     payload = [
-        _make_room_payload(room_number=100 + i, floor=1, building="Love Library", capacity=10, occupancy=0)
-        for i in range(count)
+        {
+            "room_number": room["room_number"],
+            "floor": room["floor"],
+            "building": "Love Library",
+            "capacity": 4,
+            "current_occupancy": random.randint(0, 4)
+        }
+        for room in room_data
     ]
 
     # Insert into Supabase
@@ -58,7 +109,7 @@ def seed_if_empty():
     try:
         resp = supabase.table("study_rooms").select("id").limit(1).execute()
         if not resp.data:
-            upload_dummy_data(count=3)
+            upload_dummy_data()
             print("Seeded study_rooms with dummy data.")
         else:
             print("study_rooms table already has data; skipping seed.")
@@ -84,6 +135,14 @@ def get_room(room_id: int):
         else:
             print(f"Room with room_number {room_id} not found.")
             return JSONResponse(content={"status": "error", "message": "Room not found"}, status_code=404)
+    except Exception as e:
+        return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
+    
+@app.get("/floor/{floor_number}")
+def get_rooms_by_floor(floor_number: int):
+    try:
+        response = supabase.table("study_rooms").select("*").eq("floor", floor_number).execute()
+        return JSONResponse(content={"status": "success", "data": response.data})
     except Exception as e:
         return JSONResponse(content={"status": "error", "message": str(e)}, status_code=500)
 
