@@ -16,7 +16,7 @@ function App() {
             setError(null);
             
             try {
-                const url = `http://localhost:8000/rooms`;
+                const url = `http://localhost:8000/floor/${currentLevel}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {
