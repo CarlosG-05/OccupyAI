@@ -5,10 +5,17 @@ from supabase import create_client, Client
 import uvicorn
 import os
 from datetime import datetime
-
-
 from fastapi import BackgroundTasks
-app = FastAPI()
+
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app):
+    if os.getenv("RUN_SEED_ON_STARTUP") == "true":
+        seed_if_empty()  # Runs at startup only in Docker
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.mount("/main", StaticFiles(directory="./dist", html=True), name="static")
 
@@ -17,14 +24,14 @@ SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-def _make_room_payload(room_number: int, building: str = "Main Hall", capacity: int = 20, occupancy: int = 0):
+def _make_room_payload(room_number: int, floor: int=1, building: str = "Love Library", capacity: int = 20, occupancy: int = 0):
     """Helper to create a study_rooms row payload."""
     return {
         "room_number": room_number,
+        "floor": floor,
         "building": building,
         "capacity": capacity,
-        "current_occupancy": occupancy,
-        "last_updated": datetime.now().isoformat() + 'Z'
+        "current_occupancy": occupancy
     }
 
 def upload_dummy_data(count: int = 3):
@@ -34,7 +41,7 @@ def upload_dummy_data(count: int = 3):
     This function can be imported and called from tests or used by an endpoint.
     """
     payload = [
-        _make_room_payload(room_number=100 + i, building=f"Building {i+1}", capacity=10 + i * 5, occupancy=(i % 4))
+        _make_room_payload(room_number=100 + i, floor=1, building="Love Library", capacity=10, occupancy=0)
         for i in range(count)
     ]
 
@@ -47,6 +54,7 @@ def upload_dummy_data(count: int = 3):
         raise
 
 def seed_if_empty():
+    print("Checking if study_rooms table needs seeding...")
     try:
         resp = supabase.table("study_rooms").select("id").limit(1).execute()
         if not resp.data:
@@ -56,8 +64,6 @@ def seed_if_empty():
             print("study_rooms table already has data; skipping seed.")
     except Exception as e:
         print(f"[Startup seed] Error: {e}")
-
-seed_if_empty()
 
 @app.post("/data")
 async def receive_data(request: Request):
