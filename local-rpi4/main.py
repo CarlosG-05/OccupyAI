@@ -1,12 +1,21 @@
 import cv2
 import numpy as np
 import sys
+import threading
+import time
+import requests
 from ultralytics import YOLO
-import wifi
+#import wifi
 
 IMAGE_PATH = "test.jpg"
+
 OUTPUT_IMAGE_PATH = "output.jpg"
 CONFIDENCE_THRESHOLD = 0
+SERVER_URL = "https://occupyai.onrender.com/update_occupancy"  # <-- Set your server URL here
+
+ROOM_NUMBER = "LL-312"
+FLOOR = 3
+BUILDING = "Love Library"
 
 def run_detection():
     print(f"Loading image from {IMAGE_PATH}...")
@@ -71,20 +80,36 @@ def run_detection():
     print(f"Success! Output image saved to: {OUTPUT_IMAGE_PATH}")
 
 def run_camera():
+
     from picamera2 import Picamera2
     print("Loading YOLOv8 model...")
     model = YOLO('yolo11n_ncnn_model')
     picam2 = Picamera2()
-    picam2.preview_configuration.main.size = (640, 360)
+    picam2.preview_configuration.main.size = (1280, 720)
     picam2.preview_configuration.main.format = "BGR888"
     picam2.preview_configuration.controls = {"FrameDurationLimits": (16667, 16667)}  # 60fps
     picam2.configure("preview")
     picam2.start()
     print("Starting live Picamera2 feed at 1280x720 60fps. Press 'q' to quit.")
+
+    last_person_count = None
+
+    def analyze_and_post(frame, person_count):
+        payload = {
+            "room_number": ROOM_NUMBER,
+            "current_occupancy": person_count,
+            "floor": FLOOR,
+            "building": BUILDING
+        }
+        try:
+            response = requests.post(SERVER_URL, json=payload)
+            print("Posted:", payload, "Response:", response.status_code)
+        except Exception as e:
+            print("Error posting data:", e)
+        print("Would post:", payload)
+
     while True:
         frame = picam2.capture_array()
-        # Convert RGB to BGR for YOLOv8 and OpenCV display
-        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         frame_bgr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         results = model(frame_bgr)
         person_count = 0
@@ -103,6 +128,10 @@ def run_camera():
         cv2.putText(frame_bgr, f'People Count: {person_count}', (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
         cv2.imshow('Live Picamera2 Feed', frame_bgr)
+        # Only POST if person count changes
+        if last_person_count is None or person_count != last_person_count:
+            threading.Thread(target=analyze_and_post, args=(frame_bgr, person_count), daemon=True).start()
+            last_person_count = person_count
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cv2.destroyAllWindows()

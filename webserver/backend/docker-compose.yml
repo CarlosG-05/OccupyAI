@@ -1,7 +1,9 @@
 version: '3.8'
 services:
   fastapi:
-    build: .
+    build:
+      context: ../..   # or . if your compose file is at workspace root
+      dockerfile: webserver/backend/Dockerfile
     environment:
       RUN_SEED_ON_STARTUP: "true"
     container_name: fastapi-server

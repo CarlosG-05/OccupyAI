@@ -16,7 +16,7 @@ function App() {
             setError(null);
             
             try {
-                const url = `http://localhost:8000/floor/${currentLevel}`;
+                const url = `https://occupyai.onrender.com/floor/${currentLevel}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {
@@ -24,7 +24,7 @@ function App() {
                 }
 
                 const data = await response.json();
-                
+                console.log('Fetched data:', data);
                 setLevelInfo(data); 
 
             } catch (err) {
@@ -41,20 +41,7 @@ function App() {
             <Header setCurrentLevel={setCurrentLevel} />
             <Banner level={currentLevel} />
             <h1>Room Availability</h1>
-            <Display levelInfo={levelInfo}/>
-
-            <div style={{ padding: '20px' }}>
-                <hr />
-                <h2>API Response for Post #{currentLevel}:</h2>
-
-                {isLoading && <p>Loading...</p>}
-
-                {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-
-                {levelInfo && (
-                        <pre>{JSON.stringify(levelInfo, null, 2)}</pre>
-                )}
-            </div>
+            <Display levelInfo={levelInfo} />
         </>
     );
 }
