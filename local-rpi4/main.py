@@ -92,19 +92,9 @@ def run_camera():
     picam2.start()
     print("Starting live Picamera2 feed at 1280x720 60fps. Press 'q' to quit.")
 
-    last_post_time = time.time()
-    post_interval = 30  # seconds
+    last_person_count = None
 
-    def analyze_and_post(frame):
-        results = model(frame)
-        person_count = 0
-        for result in results:
-            boxes = result.boxes
-            for box in boxes:
-                cls = int(box.cls[0])
-                conf = float(box.conf[0])
-                if cls == 0 and conf > CONFIDENCE_THRESHOLD:
-                    person_count += 1
+    def analyze_and_post(frame, person_count):
         payload = {
             "room_number": ROOM_NUMBER,
             "current_occupancy": person_count,
@@ -117,16 +107,10 @@ def run_camera():
         except Exception as e:
             print("Error posting data:", e)
         print("Would post:", payload)
-        return person_count
 
     while True:
         frame = picam2.capture_array()
         frame_bgr = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        # Only analyze and post every 30 seconds
-        if time.time() - last_post_time > post_interval:
-            threading.Thread(target=analyze_and_post, args=(frame_bgr,), daemon=True).start()
-            last_post_time = time.time()
-        # For live view, you can still run detection for overlay
         results = model(frame_bgr)
         person_count = 0
         for result in results:
@@ -144,6 +128,10 @@ def run_camera():
         cv2.putText(frame_bgr, f'People Count: {person_count}', (30, 50),
                     cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 0), 2, cv2.LINE_AA)
         cv2.imshow('Live Picamera2 Feed', frame_bgr)
+        # Only POST if person count changes
+        if last_person_count is None or person_count != last_person_count:
+            threading.Thread(target=analyze_and_post, args=(frame_bgr, person_count), daemon=True).start()
+            last_person_count = person_count
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
     cv2.destroyAllWindows()
