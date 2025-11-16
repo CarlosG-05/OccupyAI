@@ -16,7 +16,7 @@ function App() {
             setError(null);
             
             try {
-                const url = `http://localhost:8000/floor/${currentLevel}`;
+                const url = `https://occupyai.onrender.com/floor/${currentLevel}`;
                 const response = await fetch(url);
 
                 if (!response.ok) {
